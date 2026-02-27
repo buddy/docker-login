@@ -1,0 +1,19 @@
+name: 'Buddy Docker Login'
+description: 'Login to Buddy Docker registry'
+author: 'Marcel Gańczarczyk'
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
+inputs:
+  token:
+    description: 'Buddy personal access token. Defaults to BUDDY_TOKEN env var.'
+    required: false
+  region:
+    description: 'Buddy region (us, eu, as). Defaults to BUDDY_REGION env var.'
+    required: false
+  api_url:
+    description: 'Buddy API endpoint for on-premises. Defaults to BUDDY_API_ENDPOINT env var.'
+    required: false
+branding:
+  icon: 'log-in'
+  color: 'blue'
