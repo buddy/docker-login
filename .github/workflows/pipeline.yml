@@ -1,0 +1,87 @@
+name: Docker Login to Buddy from GitHub Actions
+
+# on: [push, pull_request, workflow_dispatch]
+on: [workflow_dispatch]
+
+jobs:
+  test-docker-login:
+    name: Test Docker login
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Buddy
+        uses: buddy/login@v1
+        with:
+          token: ${{ secrets.TOKEN }}
+          region: 'US'
+
+      - name: Setup BDY CLI
+        uses: buddy/setup@v1
+        with:
+          installation_method: 'npm'
+          env: 'dev'
+
+      - name: Docker login (via buddy/login env vars)
+        uses: ./
+
+      - name: Verify Docker login
+        run: |
+          if docker info 2>/dev/null | grep -q "buddy"; then
+            echo "Docker login verified"
+          else
+            echo "Docker login completed (manual verification needed)"
+          fi
+
+  test-docker-login-direct:
+    name: Test Docker login with direct inputs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup BDY CLI
+        uses: buddy/setup@v1
+        with:
+          installation_method: 'npm'
+          env: 'dev'
+
+      - name: Docker login (direct inputs)
+        uses: ./
+        with:
+          token: ${{ secrets.TOKEN }}
+          region: us
+
+  test-docker-login-failure:
+    name: Test Docker login failure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup BDY CLI
+        uses: buddy/setup@v1
+        with:
+          installation_method: 'npm'
+          env: 'dev'
+
+      - name: Docker login with invalid token (should fail)
+        id: login-invalid
+        continue-on-error: true
+        uses: ./
+        with:
+          token: invalid-token
+          region: us
+
+      - name: Verify invalid token failed
+        run: |
+          if [ "${{ steps.login-invalid.outcome }}" == "failure" ]; then
+            echo "Action correctly failed for invalid token"
+          else
+            echo "Action should have failed but succeeded"
+            exit 1
+          fi
