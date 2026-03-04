@@ -28,10 +28,11 @@ jobs:
 
       - name: Verify Docker login
         run: |
-          if docker info 2>/dev/null | grep -q "buddy"; then
-            echo "Docker login verified"
+          if grep -q "container-pkg.buddy.works" "$HOME/.docker/config.json" 2>/dev/null; then
+            echo "Buddy Docker registry login verified"
           else
-            echo "Docker login completed (manual verification needed)"
+            echo "Buddy Docker registry not found in Docker config"
+            exit 1
           fi
 
   test-docker-login-direct:
