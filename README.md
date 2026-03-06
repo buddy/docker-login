@@ -86,8 +86,8 @@ jobs:
 
       - uses: buddy/docker-login@v1
 
-      - run: docker build -t my-app .
-      - run: docker push my-app
+      - run: docker build -t container-pkg.buddy.works/my-workspace/my-app:latest .
+      - run: docker push container-pkg.buddy.works/my-workspace/my-app:latest
 ```
 
 ## License
