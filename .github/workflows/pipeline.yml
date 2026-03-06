@@ -55,6 +55,46 @@ jobs:
           token: ${{ secrets.TOKEN }}
           region: us
 
+  test-docker-pull:
+    name: Test Docker pull before and after login
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Pull before login (should fail)
+        id: pull-before
+        continue-on-error: true
+        run: docker pull ${{ secrets.DOCKER_IMAGE }}
+
+      - name: Verify pull before login failed
+        run: |
+          if [ "${{ steps.pull-before.outcome }}" == "failure" ]; then
+            echo "Pull correctly failed before login"
+          else
+            echo "Pull should have failed before login"
+            exit 1
+          fi
+
+      - name: Login to Buddy
+        uses: buddy/login@v1
+        with:
+          token: ${{ secrets.TOKEN }}
+          region: 'US'
+
+      - name: Setup BDY CLI
+        uses: buddy/setup@v1
+        with:
+          installation_method: 'npm'
+          env: 'dev'
+
+      - name: Docker login
+        uses: ./
+
+      - name: Pull after login (should succeed)
+        run: docker pull ${{ secrets.DOCKER_IMAGE }}
+
   test-docker-login-failure:
     name: Test Docker login failure
     runs-on: ubuntu-latest
