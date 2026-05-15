@@ -1,74 +1,60 @@
-name: Docker Login to Buddy from GitHub Actions
+name: Test
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
-  test-docker-login:
-    name: Test Docker login
+  test-with-login-env:
+    name: Login via buddy/login env vars
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Login to Buddy
-        uses: buddy/login@v1
+      - uses: actions/checkout@v5
+      - uses: buddy/login@v1
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.BUDDY_TOKEN }}
           region: 'US'
-
-      - name: Setup BDY CLI
-        uses: buddy/setup@v1
+      - uses: buddy/setup@v1
         with:
           installation_method: 'npm'
           env: 'dev'
-
-      - name: Docker login (via buddy/login env vars)
+      - name: Docker login via env vars
         uses: ./
-
       - name: Verify Docker login
         run: |
-          if grep -q "container-pkg.buddy.works" "$HOME/.docker/config.json" 2>/dev/null; then
+          if grep -q "container.registry.sh" "$HOME/.docker/config.json" 2>/dev/null; then
             echo "Buddy Docker registry login verified"
           else
             echo "Buddy Docker registry not found in Docker config"
             exit 1
           fi
 
-  test-docker-login-direct:
-    name: Test Docker login with direct inputs
+  test-with-direct-inputs:
+    name: Login via direct inputs
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup BDY CLI
-        uses: buddy/setup@v1
+      - uses: actions/checkout@v5
+      - uses: buddy/setup@v1
         with:
           installation_method: 'npm'
           env: 'dev'
-
-      - name: Docker login (direct inputs)
+      - name: Docker login with direct inputs
         uses: ./
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.BUDDY_TOKEN }}
           region: us
 
   test-docker-pull:
-    name: Test Docker pull before and after login
+    name: Docker pull before/after login
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v5
       - name: Pull before login (should fail)
         id: pull-before
         continue-on-error: true
-        run: docker pull ${{ secrets.DOCKER_IMAGE }}
-
-      - name: Verify pull before login failed
+        run: docker pull "${{ secrets.BUDDY_DOCKER_IMAGE }}"
+      - name: Verify pull failed
         run: |
           if [ "${{ steps.pull-before.outcome }}" == "failure" ]; then
             echo "Pull correctly failed before login"
@@ -76,47 +62,35 @@ jobs:
             echo "Pull should have failed before login"
             exit 1
           fi
-
-      - name: Login to Buddy
-        uses: buddy/login@v1
+      - uses: buddy/login@v1
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.BUDDY_TOKEN }}
           region: 'US'
-
-      - name: Setup BDY CLI
-        uses: buddy/setup@v1
+      - uses: buddy/setup@v1
         with:
           installation_method: 'npm'
           env: 'dev'
-
       - name: Docker login
         uses: ./
+      - name: Pull after login
+        run: docker pull "${{ secrets.BUDDY_DOCKER_IMAGE }}"
 
-      - name: Pull after login (should succeed)
-        run: docker pull ${{ secrets.DOCKER_IMAGE }}
-
-  test-docker-login-failure:
-    name: Test Docker login failure
+  test-failure:
+    name: Invalid token (should fail)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup BDY CLI
-        uses: buddy/setup@v1
+      - uses: actions/checkout@v5
+      - uses: buddy/setup@v1
         with:
           installation_method: 'npm'
           env: 'dev'
-
-      - name: Docker login with invalid token (should fail)
+      - name: Docker login with invalid token
         id: login-invalid
         continue-on-error: true
         uses: ./
         with:
           token: invalid-token
           region: us
-
       - name: Verify invalid token failed
         run: |
           if [ "${{ steps.login-invalid.outcome }}" == "failure" ]; then

@@ -8,17 +8,12 @@ GitHub Action for logging in to the [Buddy](https://buddy.works) Docker registry
 - Works with `buddy/login` environment variables or direct inputs
 - Supports on-premises Buddy installations via custom API endpoint
 
-## Prerequisites
-
-This action requires the BDY CLI to be installed. Use [`buddy/setup`](https://github.com/buddy/setup) to install it.
-
 ## Usage
 
 ### Basic (with `buddy/login`)
 
 ```yaml
 steps:
-  - uses: buddy/setup@v1
   - uses: buddy/login@v1
     with:
       token: ${{ secrets.BUDDY_TOKEN }}
@@ -30,7 +25,6 @@ steps:
 
 ```yaml
 steps:
-  - uses: buddy/setup@v1
   - uses: buddy/docker-login@v1
     with:
       token: ${{ secrets.BUDDY_TOKEN }}
@@ -41,20 +35,21 @@ steps:
 
 ```yaml
 steps:
-  - uses: buddy/setup@v1
   - uses: buddy/docker-login@v1
     with:
       token: ${{ secrets.BUDDY_TOKEN }}
       api_url: https://buddy.example.com/api
 ```
 
+By default, this action automatically installs the latest BDY CLI from the production channel. If you need a specific version or channel, use [`buddy/setup`](https://github.com/buddy/setup) before this action.
+
 ## Inputs
 
-| Input     | Description                                                          | Required | Default               |
-|-----------|----------------------------------------------------------------------|----------|-----------------------|
-| `token`   | Buddy personal access token                                         | No       | `BUDDY_TOKEN` env var |
-| `region`  | Buddy region (`us`, `eu`, `as`)                                     | No       | `BUDDY_REGION` env var|
-| `api_url` | Buddy API endpoint for on-premises installations                    | No       | `BUDDY_API_ENDPOINT` env var |
+| Input     | Description                                      | Required | Default                      |
+| --------- | ------------------------------------------------ | -------- | ---------------------------- |
+| `token`   | Buddy personal access token                      | No       | `BUDDY_TOKEN` env var        |
+| `region`  | Buddy region (`us`, `eu`, `as`)                  | No       | `BUDDY_REGION` env var       |
+| `api_url` | Buddy API endpoint for on-premises installations | No       | `BUDDY_API_ENDPOINT` env var |
 
 ## Environment Variables
 
@@ -77,8 +72,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: buddy/setup@v1
-
       - uses: buddy/login@v1
         with:
           token: ${{ secrets.BUDDY_TOKEN }}
@@ -86,8 +79,8 @@ jobs:
 
       - uses: buddy/docker-login@v1
 
-      - run: docker build -t container-pkg.buddy.works/my-workspace/my-app:latest .
-      - run: docker push container-pkg.buddy.works/my-workspace/my-app:latest
+      - run: docker build -t container.registry.sh/my-workspace/my-app:latest .
+      - run: docker push container.registry.sh/my-workspace/my-app:latest
 ```
 
 ## License
