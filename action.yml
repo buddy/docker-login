@@ -14,6 +14,9 @@ inputs:
   api_url:
     description: 'Buddy API endpoint for on-premises. Defaults to BUDDY_API_ENDPOINT env var.'
     required: false
+  debug:
+    description: 'Enable debug logging. On command failure, also dumps the BDY CLI log (~/.bdy/cli.log).'
+    required: false
 branding:
   icon: 'log-in'
   color: 'blue'

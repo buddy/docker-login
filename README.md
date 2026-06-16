@@ -45,11 +45,12 @@ By default, this action automatically installs the latest BDY CLI from the produ
 
 ## Inputs
 
-| Input     | Description                                      | Required | Default                      |
-| --------- | ------------------------------------------------ | -------- | ---------------------------- |
-| `token`   | Buddy personal access token                      | No       | `BUDDY_TOKEN` env var        |
-| `region`  | Buddy region (`us`, `eu`, `as`)                  | No       | `BUDDY_REGION` env var       |
-| `api_url` | Buddy API endpoint for on-premises installations | No       | `BUDDY_API_ENDPOINT` env var |
+| Input     | Description                                                        | Required | Default                      |
+| --------- | ------------------------------------------------------------------ | -------- | ---------------------------- |
+| `token`   | Buddy personal access token                                        | No       | `BUDDY_TOKEN` env var        |
+| `region`  | Buddy region (`us`, `eu`, `as`)                                    | No       | `BUDDY_REGION` env var       |
+| `api_url` | Buddy API endpoint for on-premises installations                   | No       | `BUDDY_API_ENDPOINT` env var |
+| `debug`   | Run the BDY CLI in DEBUG mode and dump `~/.bdy/cli.log` on failure | No       | `false`                      |
 
 ## Environment Variables
 
@@ -82,6 +83,22 @@ jobs:
       - run: docker build -t container.registry.sh/my-workspace/my-app:latest .
       - run: docker push container.registry.sh/my-workspace/my-app:latest
 ```
+
+## Debugging
+
+If a BDY CLI command fails, the action throws an error that includes the exit code, the command that was run, and its captured output.
+
+Enabling debug runs the BDY CLI in DEBUG mode, so it writes verbose logs to `~/.bdy/cli.log`, and on failure dumps that log (plus a stack trace) into the workflow output. Enable it in either of these ways:
+
+- **Per step** — set the `debug` input on this action:
+
+  ```yaml
+  - uses: buddy/docker-login@v1
+    with:
+      debug: true
+  ```
+
+- **Whole run** — enable [GitHub step debug logging](https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/enabling-debug-logging), either by ticking **Enable debug logging** in the "Re-run jobs" dialog or by setting the `ACTIONS_STEP_DEBUG` repository secret/variable to `true`.
 
 ## License
 
